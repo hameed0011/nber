@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>yayay</title>
+<style>
+/* --- GLOBAL RESET --- */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  font-family: "Segoe UI", sans-serif;
+}
+body {
+  background: #111;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+/* --- PHONE BODY --- */
+.phone {
+  width: 360px;
+  height: 700px;
+  background: #000;
+  border-radius: 30px;
+  padding: 25px;
+  position: relative;
+  box-shadow: 0 0 30px rgba(0,0,0,0.7);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* --- NUMBER DISPLAY --- */
+.display {
+  height: 120px;
+  color: #fff;
+  font-size: 34px;
+  text-align: center;
+  letter-spacing: 2px;
+  padding-top: 30px;
+  overflow: hidden;
+}
+
+/* --- KEYPAD GRID --- */
+.keypad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+  margin-top: 10px;
+  padding: 10px;
+}
+
+/* --- BUTTON STYLING --- */
+.btn {
+  width: 100%;
+  height: 80px;
+  border-radius: 50%;
+  background: #1c1c1e;
+  color: white;
+  font-size: 28px;
+  font-weight: 600;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  transition: 0.1s;
+}
+.btn small {
+  font-size: 10px;
+  opacity: 0.6;
+}
+.btn:active {
+  background: #333;
+  transform: scale(0.95);
+}
+
+/* --- CALL BUTTON --- */
+.call-btn {
+  grid-column: 2 / 3;
+  background: #28d146;
+  color: white;
+  font-size: 32px;
+  font-weight: bold;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 80px;
+}
+.call-btn:active {
+  background: #1faa34;
+}
+
+/* --- BACKSPACE BUTTON --- */
+.backspace {
+  font-size: 25px;
+  color: #aaa;
+  transition: 0.15s;
+}
+.backspace:active {
+  color: white;
+  transform: scale(0.8);
+}
+
+/* --- MESSAGE POPUP --- */
+.popup, .wrongPopup {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.92);
+  backdrop-filter: blur(6px);
+  border-radius: 30px;
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  padding: 30px;
+  color: white;
+  line-height: 1.6;
+  font-size: 18px;
+}
+
+.closePopup, .closeWrong {
+  margin-top: 30px;
+  padding: 12px;
+  background: #444;
+  border-radius: 12px;
+  text-align: center;
+  font-size: 16px;
+}
+.closePopup:active, .closeWrong:active {
+  background: #666;
+}
+</style>
+</head>
+<body>
+<div class="phone">
+
+  <div class="display" id="display"></div>
+
+  <div class="keypad">
+    <div class="btn" data-num="1">1<small></small></div>
+    <div class="btn" data-num="2">2<small>ABC</small></div>
+    <div class="btn" data-num="3">3<small>DEF</small></div>
+
+    <div class="btn" data-num="4">4<small>GHI</small></div>
+    <div class="btn" data-num="5">5<small>JKL</small></div>
+    <div class="btn" data-num="6">6<small>MNO</small></div>
+
+    <div class="btn" data-num="7">7<small>PQRS</small></div>
+    <div class="btn" data-num="8">8<small>TUV</small></div>
+    <div class="btn" data-num="9">9<small>WXYZ</small></div>
+
+    <div class="btn" data-num=""></div>
+    <div class="btn" data-num="0">0<small>+</small></div>
+    <div class="btn" data-num="#">#</div>
+
+    <div></div>
+    <div class="call-btn" id="callBtn">📞</div>
+    <div class="btn backspace" id="backspace">⌫</div>
+  </div>
+
+  <!-- CORRECT NUMBER POPUP -->
+  <div class="popup" id="popup">
+    <p>
+      You attempted to call <b>7485877750</b>.
+      <br><br>
+      This is a demo dialer interface created to mimic a real smartphone dialpad.
+      <br><br>
+      The call button also triggers looping audio to simulate a ringtone.
+    </p>
+    <div class="closePopup" id="closePopup">Close</div>
+  </div>
+
+  <!-- WRONG NUMBER POPUP -->
+  <div class="wrongPopup" id="wrongPopup">
+    <p>
+      The number you entered is incorrect.
+      <br><br>
+      Please dial <b>7485877750</b>.
+    </p>
+    <div class="closeWrong" id="closeWrong">Close</div>
+  </div>
+
+  <!-- AUDIO -->
+  <audio id="ringtone" loop>
+    <source src="ringtone-loop.mp3" type="audio/mpeg" />
+  </audio>
+
+</div>
+
+<script>
+const display = document.getElementById("display");
+const buttons = document.querySelectorAll(".btn");
+const popup = document.getElementById("popup");
+const wrongPopup = document.getElementById("wrongPopup");
+const closePopup = document.getElementById("closePopup");
+const closeWrong = document.getElementById("closeWrong");
+const backspace = document.getElementById("backspace");
+const ringtone = document.getElementById("ringtone");
+const callBtn = document.getElementById("callBtn");
+
+buttons.forEach(btn => {
+  btn.addEventListener("click", () => {
+    const num = btn.getAttribute("data-num");
+    if (num) display.textContent += num;
+  });
+});
+
+backspace.onclick = () => {
+  display.textContent = display.textContent.slice(0, -1);
+};
+
+callBtn.onclick = () => {
+  if (display.textContent === "7485877750") {
+    popup.style.display = "flex";
+    ringtone.play();
+  } else {
+    wrongPopup.style.display = "flex";
+  }
+};
+
+closePopup.onclick = () => {
+  popup.style.display = "none";
+  ringtone.pause();
+  ringtone.currentTime = 0;
+};
+
+closeWrong.onclick = () => {
+  wrongPopup.style.display = "none";
+};
+</script>
+</body>
+</html>
